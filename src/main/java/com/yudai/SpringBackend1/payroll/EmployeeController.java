@@ -2,6 +2,8 @@ package com.yudai.SpringBackend1.payroll;
 
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.IanaLinkRelations;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -33,8 +35,12 @@ public class EmployeeController {
     }
 
     @PostMapping("/employees")
-    Employee newEmployee(@RequestBody Employee newEmployee) {
-        return repository.save(newEmployee);
+    ResponseEntity<?> newEmployee(@RequestBody Employee newEmployee) {
+        EntityModel<Employee> entityModel = assembler.toModel(repository.save(newEmployee));
+
+        return ResponseEntity.created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri())
+                .body(entityModel);
+//        return repository.save(newEmployee);
     }
 
     // Single item
@@ -64,7 +70,8 @@ public class EmployeeController {
     }
 
     @DeleteMapping("/employees/{id}")
-    void deleteEmployee(@PathVariable Long id) {
+    ResponseEntity<?> deleteEmployee(@PathVariable Long id) {
         repository.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 }
